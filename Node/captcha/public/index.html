@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPTCHA Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        #captcha-img { display: block; margin: 20px auto; border: 1px solid #ccc; }
+        input, button { padding: 10px; margin: 10px; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <h2>Enter the CAPTCHA</h2>
+    <img id="captcha-img" src="/captcha" alt="CAPTCHA">
+    <br>
+    <input type="text" id="captcha-input" placeholder="Enter CAPTCHA">
+    <button onclick="verifyCaptcha()">Submit</button>
+    <button onclick="reloadCaptcha()">Reload CAPTCHA</button>
+    
+    <p id="result"></p>
+
+    <script>
+        function reloadCaptcha() {
+            document.getElementById("captcha-img").src = "/captcha?" + Date.now(); // Reload CAPTCHA
+        }
+
+        function verifyCaptcha() {
+            const userInput = document.getElementById("captcha-input").value;
+
+            fetch("/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ captcha: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = data.message;
+                document.getElementById("result").style.color = data.success ? "green" : "red";
+                if (!data.success) reloadCaptcha(); // Reload if incorrect
+            });
+        }
+    </script>
+
+</body>
+</html>
