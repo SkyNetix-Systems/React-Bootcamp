@@ -1,16 +1,18 @@
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Signup from "./components/Signup";
 import Login from "./components/Login";
-import Database from "./components/Database";
-import FileUpload from "./components/FileUpload";
+import Home from "./components/Home";
 
 function App() {
     return (
-        <div>
-            <h1>Authentication App</h1>
-            {/* <Login />
-            <Database />
-            <FileUpload /> */}
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<Signup />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/home" element={<Home />} />
+            </Routes>
+        </Router>
     );
 }
 
