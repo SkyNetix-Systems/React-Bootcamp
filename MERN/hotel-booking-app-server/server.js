@@ -2,9 +2,19 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import morgan from "morgan";
+import cors from "cors";
+import mongoose from "mongoose";
+import connectDB from "./config/db.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
-const PORT = 8000;
+connectDB();
+// middleware
+app.use(cors());
+app.use(morgan("dev"))
+const PORT = process.env.PORT || 8000;
 
 // Fix __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
