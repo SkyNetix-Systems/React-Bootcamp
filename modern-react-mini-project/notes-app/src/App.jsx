@@ -1,11 +1,7 @@
-import React from "react";
-
 const App = () => {
   return (
-    <div>
-      <h1 className="text-4xl font-bold text-green-500">
-        Tailwind is working 🎉
-      </h1>
+    <div className="max-w-lg mx-auto mt-10 p-6 bg-gray-100 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-4 text-center">📝 Notes App</h2>
     </div>
   );
 };
