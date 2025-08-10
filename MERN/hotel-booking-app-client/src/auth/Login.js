@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import { login } from "../actions/auth";
-import LoginForm from "../components/LoginForm";
+import LoginForm from "../components/forms/LoginForm";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
