@@ -1,35 +1,15 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+// 📦 Core imports
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
 
-// 🛠️ Redux Toolkit + React-Redux imports
-import { configureStore, createSlice } from "@reduxjs/toolkit";
+// 🛠️ Redux imports
 import { Provider } from "react-redux";
+import { store } from "./store";
 
-// 🗃️ Create auth slice (reducers + actions)
-const authSlice = createSlice({
-  name: "auth",
-  initialState: {},
-  reducers: {
-    loggedInUser: (state, action) => ({ ...state, ...action.payload }),
-    logout: (state, action) => action.payload,
-  },
-});
-
-// 🎯 Export actions for dispatching later
-export const { loggedInUser, logout } = authSlice.actions;
-
-// 🏪 Configure store with slices
-const store = configureStore({
-  reducer: {
-    user: authSlice.reducer,
-  },
-  // DevTools enabled by default 🔥
-});
-
-// 🚀 Provide store to entire app
+// 🚀 Modern React 18 root rendering
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
@@ -39,5 +19,5 @@ root.render(
   </React.StrictMode>
 );
 
-// 📈 Report performance metrics (optional)
+// 📊 Optional performance tracking
 reportWebVitals();
