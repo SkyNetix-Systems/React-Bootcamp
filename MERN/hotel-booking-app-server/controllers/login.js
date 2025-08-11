@@ -2,7 +2,6 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-
 export const login = async (req, res) => {
     console.log("Login body:", req.body);
 
@@ -29,14 +28,17 @@ export const login = async (req, res) => {
         // 🎉 Success
         console.log("✅ Login successful for:", user.email);
 
-        // Generate a jwt token
+        // ✅ Use JWT_SECRET from .env (or fallback for safety)
+        const jwtSecret = process.env.JWT_SECRET || "superSecretSauceNoOneKnows123";
+
+        // Generate a JWT token
         const token = jwt.sign(
             { _id: user._id }, // payload
-            process.env.JWT_SECRET, // secret key from .env
+            jwtSecret, // secret key
             { expiresIn: "7d" } // token validity
         );
 
-        res.json({
+        return res.json({
             message: "Login successful",
             token, // send token to frontend
             user: {
@@ -46,17 +48,8 @@ export const login = async (req, res) => {
             },
         });
 
-        res.json({
-            message: "Login successful",
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-            },
-        });
-
     } catch (err) {
         console.error("❌ Login error:", err);
-        res.status(500).json({ error: "Server error. Try again later." });
+        return res.status(500).json({ error: "Server error. Try again later." });
     }
 };
