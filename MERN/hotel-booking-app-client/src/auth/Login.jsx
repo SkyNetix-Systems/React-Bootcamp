@@ -34,7 +34,7 @@ const Login = () => {
             }
 
             toast.success("🎉 Login successful!");
-            navigate("/");
+            navigate("/dashboard");
         } catch (err) {
             console.error("❌ Login error:", err);
             toast.error(err.response?.data?.error || "Login failed. Please try again.");

@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../store"; // <-- Make sure logout is exported from store
+import { logout } from "../store"; // Make sure logout is exported
 
 const TopNav = () => {
-    const auth = useSelector((state) => state.auth); // ✅ Correct way
+    const auth = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -19,9 +19,12 @@ const TopNav = () => {
             <Link className="nav-link" to="/">Home</Link>
 
             {auth?.token ? (
-                <button onClick={handleLogout} className="nav-link btn btn-link">
-                    Logout
-                </button>
+                <>
+                    <Link className="nav-link" to="/dashboard">Dashboard</Link> {/* 👈 Added */}
+                    <button onClick={handleLogout} className="nav-link btn btn-link">
+                        Logout
+                    </button>
+                </>
             ) : (
                 <>
                     <Link className="nav-link" to="/login">Login</Link>
