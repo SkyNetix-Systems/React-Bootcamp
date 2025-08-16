@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 const { Meta } = Card;
 
 const ConnectNav = () => {
-    const { auth } = useSelector((state) => ({ ...state }));
+    const auth = useSelector((state) => state.auth);
     const user = auth?.user;
 
     return (
