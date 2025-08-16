@@ -1,23 +1,33 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { allHotels } from "../actions/hotel";
+import SmallCard from "../components/cards/SmallCard";
 
 const Home = () => {
-    // useSelector must be used inside the component
-    const { name, email, token } = useSelector((state) => ({
-        name: state.auth.user?.name,
-        email: state.auth.user?.email,
-        token: state.auth.token
-    }));
+    const [hotels, setHotels] = useState([]);
 
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Token:", token);
+    const loadAllHotels = async () => {
+        try {
+            const { data } = await allHotels();
+            setHotels(data);
+        } catch (err) {
+            console.log("Error loading hotels:", err);
+        }
+    };
+
+    useEffect(() => {
+        loadAllHotels();
+    }, []);
 
     return (
-        <div className="container-fluid h1 p-5 text-center">
-            Home Page
+        <div className="container mt-4">
+            <h1>Hotels</h1>
+            {hotels.length ? (
+                hotels.map((h) => <SmallCard key={h._id} h={h} />)
+            ) : (
+                <p>No Hotels Found</p>
+            )}
         </div>
     );
-}
+};
 
 export default Home;
