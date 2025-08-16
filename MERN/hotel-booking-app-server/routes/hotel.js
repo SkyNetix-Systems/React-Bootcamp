@@ -5,7 +5,7 @@ import { create } from '../controllers/hotel.js';
 
 const router = express.Router();
 
-router.post("/create-hotel", requireSignin, formidable(), create);
+router.post("/create-hotel", requireSignin, create);
 
 
 export default router;
