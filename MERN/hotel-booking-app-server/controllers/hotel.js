@@ -1,49 +1,40 @@
 import Hotel from "../models/hotel.js";
-import formidable from "formidable";
-import fs from "fs";
 
-export const create = async (req, res) => {
-    let form = formidable({ multiples: false, keepExtensions: true });
+// Create hotel
+export const createHotel = async (req, res) => {
+    try {
+        const hotel = new Hotel({ ...req.body, postedBy: req.user._id });
 
-    form.parse(req, async (err, fields, files) => {
-        if (err) {
-            console.error("❌ Form parse error:", err);
-            return res.status(400).json({ error: "Image could not be uploaded" });
+        if (req.file) {
+            hotel.image.data = req.file.buffer;
+            hotel.image.contentType = req.file.mimetype;
         }
 
-        console.log("📩 Incoming FIELDS:", fields);
-        console.log("📂 Incoming FILES:", files);
+        await hotel.save();
+        res.json(hotel);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
 
-        const { title, content, location, price, from, to, bed } = fields;
+// Get all hotels
+export const hotels = async (req, res) => {
+    try {
+        const all = await Hotel.find({}).select("-image.data").populate("postedBy", "_id name");
+        res.json(all);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
 
-        if (!title?.trim() || !content?.trim() || !location?.trim() || !price || !from || !to || !bed) {
-            return res.status(400).json({ error: "All fields are required" });
-        }
-
-        try {
-            let hotel = new Hotel({
-                title: title.trim(),
-                content: content.trim(),
-                location: location.trim(),
-                price: Number(price),
-                from,
-                to,
-                bed: Number(bed),
-                postedBy: req.user._id, // backend sets user
-            });
-
-            if (files.image) {
-                const filePath = files.image.filepath || files.image.path;
-                hotel.image.data = fs.readFileSync(filePath);
-                hotel.image.contentType = files.image.mimetype || files.image.type;
-            }
-
-            await hotel.save();
-            console.log("✅ Hotel saved:", hotel._id);
-            res.json({ success: true, hotel });
-        } catch (saveErr) {
-            console.error("❌ Save error:", saveErr);
-            res.status(400).json({ error: "Error saving hotel" });
-        }
-    });
+// Serve hotel image
+export const hotelImage = async (req, res) => {
+    try {
+        const hotel = await Hotel.findById(req.params.hotelId);
+        if (!hotel || !hotel.image.data) return res.status(404).send("No image found");
+        res.set("Content-Type", hotel.image.contentType);
+        res.send(hotel.image.data);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
 };
