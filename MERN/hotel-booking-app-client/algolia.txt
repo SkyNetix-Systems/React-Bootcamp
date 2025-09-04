@@ -1,0 +1,3 @@
+Application ID: DGOY27JN7H
+Search API Key: 203c15495b5d235627ce8b4ee6ff65c8
+Write API Key : a83b4fed8424156bd5572a0fec221543
