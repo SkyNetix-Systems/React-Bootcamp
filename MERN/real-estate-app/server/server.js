@@ -1,27 +1,21 @@
 import express from "express";
+import authRoutes from "./routes/auth.js";
+import connectDB from "./config/db.js";
 import morgan from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
-import connectDB from "./config/db.js";
-dotenv.config(); // Load .env into process.env
-
-// Access variables
-const PORT = process.env.PORT || 3000;
+dotenv.config();
 
 const app = express();
 connectDB();
 
-// Middlewares
+// middleware
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors());
 
-app.get("/api", (req, res) => {
-  res.json({
-    data: "Hello from nodejs api",
-  });
-});
+// routes
+app.use("/api", authRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
-});
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
