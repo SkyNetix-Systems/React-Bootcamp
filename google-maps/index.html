@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Google Maps - Advanced Marker Example</title>
+  <style>
+    html,body { height: 100%; margin: 0; }
+    #map { height: 100vh; width: 100%; }
+    #map-error { display: none; padding: 20px; text-align: center; }
+    .custom-marker {
+      background: white;
+      border-radius: 8px;
+      padding: 8px 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="map-error">
+    <h3>Map failed to load 😕</h3>
+    <p>Check API key restrictions, enable Maps JavaScript API & billing in Google Cloud Console.</p>
+  </div>
+
+  <script>
+    // safety: track whether initMap executed
+    let mapLoaded = false;
+
+    function initMap() {
+      mapLoaded = true;
+
+      // Coordinates - San Francisco
+      const sf = { lat: 37.7749, lng: -122.4194 };
+
+      // Create map
+      const map = new google.maps.Map(document.getElementById('map'), {
+        center: sf,
+        zoom: 12,
+      });
+
+      // Create a simple DOM element for AdvancedMarkerElement content
+      const markerDiv = document.createElement('div');
+      markerDiv.className = 'custom-marker';
+      markerDiv.innerHTML = '<strong>San Francisco 🌉</strong><div style="font-size:12px;">The Golden Gate City</div>';
+
+      // Use AdvancedMarkerElement (recommended)
+      // Note: library=marker must be requested in the script URL for this to be available.
+      const advancedMarker = new google.maps.marker.AdvancedMarkerElement({
+        position: sf,
+        map: map,
+        content: markerDiv,
+        title: 'San Francisco',
+      });
+
+      // Optional: open an info window on click (AdvancedMarkerElement doesn't open InfoWindow automatically)
+      const infoWindow = new google.maps.InfoWindow({
+        content: '<h3>San Francisco 🌁</h3><p>Welcome to the Golden Gate City!</p>'
+      });
+
+      advancedMarker.addListener('click', () => {
+        infoWindow.open(map, advancedMarker);
+      });
+    }
+
+    // fallback UI if initMap not called in reasonable time
+    setTimeout(() => {
+      if (!mapLoaded) {
+        document.getElementById('map').style.display = 'none';
+        document.getElementById('map-error').style.display = 'block';
+        console.warn('Google Maps did not initialize in time. Check console API errors (RefererNotAllowedMapError etc.).');
+      }
+    }, 6000);
+  </script>
+
+  <!--
+    IMPORTANT:
+      - Replace YOUR_API_KEY with your real key (after restricting it).
+      - Include libraries=marker to use AdvancedMarkerElement.
+      - Loading: use async defer to avoid blocking (and follow new loader recommendations for production).
+  -->
+  <script
+    async
+    defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAZtC1dmDW8IxazyKegaoeJKJmAA8-SfMo&callback=initMap&libraries=marker">
+  </script>
+</body>
+</html>
