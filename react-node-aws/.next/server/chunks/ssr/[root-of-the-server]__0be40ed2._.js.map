@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///D:/SkyNetix/React-Bootcamp/react-node-aws/pages/index.js"],"sourcesContent":["const Home = () => <div>Hello Next.js!!</div>;\r\n\r\nexport default Home;\r\n"],"names":[],"mappings":";;;;;;AAAA,MAAM,OAAO,kBAAM,qKAAC;kBAAI;;;;;;uCAET","debugId":null}}]
+}
