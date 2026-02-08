@@ -1,25 +1,27 @@
-import { Navbar } from "./Navbar"
-import { Outlet, useNavigate } from "react-router-dom"
-import { useEffect } from "react"
+import { Navbar } from "./Navbar";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 export function Layout() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    let user = sessionStorage.getItem("User")
-    const navigate = useNavigate()
+  // ✅ Read the correct key
+  const token = sessionStorage.getItem("token");
 
-    useEffect(() => {
-        if (!user) {
-            navigate("/")
-        }
-    }, [user])
+  useEffect(() => {
+    // Allow landing page without token
+    if (!token && location.pathname !== "/") {
+      navigate("/", { replace: true });
+    }
+  }, [token, location.pathname, navigate]);
 
-
-    return (
-        <>
-            <Navbar/>
-            <main className="flex first-letter:w-screen justify-center mt-24">
-                <Outlet/>
-            </main>
-        </>
-    )
+  return (
+    <>
+      <Navbar />
+      <main className="flex w-screen justify-center mt-24">
+        <Outlet />
+      </main>
+    </>
+  );
 }

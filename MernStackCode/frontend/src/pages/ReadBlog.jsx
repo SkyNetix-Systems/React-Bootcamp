@@ -10,35 +10,35 @@ import { useState, useEffect } from "react";
 // Reusable Button component
 import { Button } from "@/components/ui/button";
 
-export function ReadBlog() {
+export const ReadBlog = () => {
   // State to store the fetched blog post
   const [post, setPost] = useState({});
 
   // Extract dynamic route parameter (:id)
-  let params = useParams();
-  let id = params.id;
+  const params = useParams();
+  const id = params.id;
 
   // Hook to programmatically navigate between routes
   const navigate = useNavigate();
 
   // Fetch blog post when component mounts
   useEffect(() => {
-    // Async function to load post details
-    async function loadPost() {
+    // Async function to load post details (arrow function)
+    const loadPost = async () => {
       // Fetch post data from backend using ID
-      let data = await getPost(id);
+      const data = await getPost(id);
 
       // Convert ISO date into readable format
-      let date = new Date(data.dateCreated);
+      const date = new Date(data.dateCreated);
       data.dateCreated = date.toString();
 
       // Store post data in state
       setPost(data);
-    }
+    };
 
     // Invoke async loader
     loadPost();
-  }, []); // Empty dependency array → run once
+  }, [id]); // added id as dependency (best practice)
 
   return (
     // Main content container
@@ -74,4 +74,4 @@ export function ReadBlog() {
       </p>
     </div>
   );
-}
+};

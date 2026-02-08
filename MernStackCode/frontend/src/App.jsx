@@ -3,7 +3,12 @@ import "./App.css";
 
 // Import routing utilities from react-router-dom
 // HashRouter is used instead of BrowserRouter (useful for GitHub Pages / static hosting)
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 // Import page-level components
 import { About } from "./pages/About";
@@ -28,7 +33,8 @@ function App() {
   // Runs once when the App component mounts
   useEffect(() => {
     // Fetch JWT token (or user token) from sessionStorage
-    let token = sessionStorage.getItem("User");
+    let token = sessionStorage.getItem("token"); // ✅ correct key
+    console.log("Token=> ", token);
 
     // If token exists, attach it to axios default headers
     // This ensures Authorization header is sent with every API request
@@ -66,6 +72,8 @@ function App() {
           {/* Contact page */}
           <Route path="/contact" element={<Contact />} />
         </Route>
+        {/* 👇 fallback so navigation never silently fails */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

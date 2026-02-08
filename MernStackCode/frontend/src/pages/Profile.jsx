@@ -1,74 +1,67 @@
-// Component used to display individual blog posts
 import { BlogCard } from "../components/BlogCard";
-
-// React hooks for state and lifecycle
 import { useState, useEffect } from "react";
-
-// API function to fetch all blog posts
 import { getPosts } from "../api";
 
-// Library to decode JWT token stored on client
-import * as jwt_decode from "jwt-decode";
-
 export function Profile() {
-  // State to store posts authored by the logged-in user
   const [posts, setPosts] = useState([]);
+  const [user, setUser] = useState(null);
 
-  // State to store decoded user details from JWT
-  const [user, setUser] = useState({});
-
-  // Runs once when Profile component mounts
   useEffect(() => {
-    // Load user info and their blog posts
     async function loadUserData() {
-      // Retrieve JWT token from sessionStorage
-      const token = sessionStorage.getItem("User");
+      try {
+        const userStr = sessionStorage.getItem("user");
+        const token = sessionStorage.getItem("token");
 
-      // Decode token to extract user information (id, email, name, etc.)
-      const decodedUser = jwt_decode.jwtDecode(token);
+        if (!userStr || !token) {
+          console.error("User not logged in");
+          return;
+        }
 
-      // Fetch all blog posts from backend
-      const allPosts = await getPosts();
+        const loggedInUser = JSON.parse(userStr);
+        setUser(loggedInUser);
 
-      // Filter posts created by the logged-in user
-      const filteredPosts = allPosts.filter(
-        (post) => post.author == decodedUser._id,
-      );
+        const allPosts = await getPosts();
 
-      // Store filtered posts and user details in state
-      setPosts(filteredPosts);
-      setUser(decodedUser);
+        const filteredPosts = allPosts.filter(
+          (post) => String(post.author) === String(loggedInUser._id),
+        );
+
+        setPosts(filteredPosts);
+      } catch (err) {
+        console.error("PROFILE LOAD ERROR:", err);
+      }
     }
 
-    // Invoke async loader
     loadUserData();
-  }, []); // Empty dependency array → run once
+  }, []);
+
+  if (!user) {
+    return <p className="text-center mt-10">Loading profile...</p>;
+  }
 
   return (
-    // Profile container
-    <div className="w-1/3">
-      {/* User name */}
-      <label className="flex left-0 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0 mb-2">
-        Name:
-      </label>
-      <h2 className="flex left-0 mb-4">{user.name}</h2>
+    <div className="w-full max-w-3xl">
+      <h2 className="text-3xl font-bold mb-2">Profile 👤</h2>
 
-      {/* User email */}
-      <label className="flex left-0 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0 mb-2">
-        Email:
-      </label>
-      <h2 className="flex left-0 mb-4">{user.email}</h2>
+      <p className="mb-2">
+        <b>Name:</b> {user.name}
+      </p>
+      <p className="mb-2">
+        <b>Email:</b> {user.email}
+      </p>
+      <p className="mb-6">
+        <b>Join Date:</b> {new Date(user.joinDate).toLocaleDateString()}
+      </p>
 
-      {/* User join date */}
-      <label className="flex left-0 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0 mb-2">
-        Join Date:
-      </label>
-      <h2 className="flex left-0 mb-4">{user.joinDate}</h2>
+      <h3 className="text-2xl font-semibold mb-4">My Posts ✍️</h3>
 
-      {/* Render user's blog posts */}
-      {posts.map((post) => {
-        return <BlogCard post={post} />;
-      })}
+      <div className="grid gap-4">
+        {posts.length === 0 && <p className="text-gray-500">No posts yet.</p>}
+
+        {posts.map((post) => (
+          <BlogCard key={post._id} post={post} />
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,91 +1,75 @@
-// API function to verify user credentials and return JWT
 import { verifyUser } from "../api";
-
-// React hook for managing form state
 import { useState } from "react";
-
-// Hook to programmatically navigate after login
 import { useNavigate } from "react-router-dom";
-
-// Axios for setting global Authorization header
 import axios from "axios";
-
-// Reusable UI components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function Login() {
-  // State to store login form values
-  const [user, setUser] = useState({
-    email: "",
-    password: "",
-  });
-
-  // Navigation hook
+  const [user, setUser] = useState({ email: "", password: "" });
   const navigate = useNavigate();
 
-  // Updates form state dynamically based on input name
-  function handleChange(e) {
-    setUser({
-      ...user,
-      [e.target.name]: e.target.value,
-    });
-  }
+  const handleChange = (e) => {
+    setUser((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
-  // Handles form submission
-  async function handleSubmit(e) {
-    // Prevent page reload
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Call backend to verify credentials
-    let response = await verifyUser(user);
+    try {
+      const res = await verifyUser(user);
 
-    if (response) {
-      // Store JWT token in sessionStorage
-      sessionStorage.setItem("User", response);
+      if (res?.token && res?.user) {
+        sessionStorage.setItem("token", res.token);
+        sessionStorage.setItem("user", JSON.stringify(res.user));
+        axios.defaults.headers.common["Authorization"] = `Bearer ${res.token}`;
+        navigate("/home", { replace: true });
+        return;
+      }
 
-      // Log token (dev/debug only — remove in production)
-      console.log(`Bearer ${response}`);
-
-      // Set default Authorization header for all axios requests
-      axios.defaults.headers.common["Authorization"] = `Bearer ${response}`;
-
-      // Redirect user to home page after successful login
-      navigate("/home");
-    } else {
-      // Show error if login fails
-      alert("Login failed");
+      alert("Login failed. Check email/password.");
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      alert("Login failed. Server error.");
     }
-  }
+  };
 
   return (
-    // Login form
-    <form onSubmit={handleSubmit} className="flex flex-col">
-      {/* Email input */}
-      <Input
-        placeholder="Email"
-        onChange={handleChange}
-        name="email"
-        required
-        maxLength={40}
-        className="mb-2"
-      />
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="w-full max-w-md rounded-xl border bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-semibold mb-4 text-center">
+          Welcome back 👋
+        </h2>
 
-      {/* Password input */}
-      <Input
-        placeholder="Password"
-        onChange={handleChange}
-        name="password"
-        type="password"
-        required
-        maxLength={20}
-        className="mb-2"
-      />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <Input
+            name="email"
+            placeholder="Email"
+            onChange={handleChange}
+            required
+          />
 
-      {/* Submit button */}
-      <Button type="submit" className="mb-4">
-        Login
-      </Button>
-    </form>
+          <Input
+            name="password"
+            type="password"
+            placeholder="Password"
+            onChange={handleChange}
+            required
+          />
+
+          <Button type="submit" className="mt-2">
+            Login
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate("/register")}
+          >
+            Create new account
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }
