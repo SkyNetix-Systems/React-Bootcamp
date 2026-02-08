@@ -1,10 +1,12 @@
 import { BlogCard } from "../components/BlogCard";
 import { useState, useEffect } from "react";
 import { getPosts } from "../api";
+import { useNavigate } from "react-router-dom";
 
 export function Profile() {
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadUserData() {
@@ -13,7 +15,8 @@ export function Profile() {
         const token = sessionStorage.getItem("token");
 
         if (!userStr || !token) {
-          console.error("User not logged in");
+          console.warn("Not logged in → redirecting to landing");
+          navigate("/", { replace: true });
           return;
         }
 
@@ -33,10 +36,10 @@ export function Profile() {
     }
 
     loadUserData();
-  }, []);
+  }, [navigate]);
 
   if (!user) {
-    return <p className="text-center mt-10">Loading profile...</p>;
+    return <p className="text-center mt-10">Loading profile… ⏳</p>;
   }
 
   return (

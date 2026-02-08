@@ -1,45 +1,67 @@
 import express from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { ObjectId } from "mongodb";
-import database from "./connect.js";
+import { getDb } from "./connect.js";
 
-dotenv.config();
-const userRoutes = express.Router();
-const SALT_ROUNDS = 10;
+const router = express.Router();
 
-userRoutes.post("/users/login", async (req, res) => {
+// POST /users/register
+router.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success: false });
+    const { name, email, password } = req.body;
+    const db = getDb();
 
-    const db = database.getDb();
-    const user = await db.collection("users").findOne({ email });
-    if (!user) return res.status(401).json({ success: false });
+    const existing = await db.collection("users").findOne({ email });
+    if (existing) {
+      return res.status(409).json({ message: "User already exists" });
+    }
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(401).json({ success: false });
+    const hashed = await bcrypt.hash(password, 10);
 
-    const token = jwt.sign(
-      { _id: user._id, email: user.email },
-      process.env.SECRETKEY,
-      { expiresIn: "1h" },
-    );
-
-    res.json({
-      success: true,
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        joinDate: user.joinDate,
-      },
+    const result = await db.collection("users").insertOne({
+      name,
+      email,
+      password: hashed,
+      createdAt: new Date(),
     });
-  } catch (e) {
-    res.status(500).json({ success: false });
+
+    res.json({ message: "User registered", userId: result.insertedId });
+  } catch (err) {
+    console.error("REGISTER ERROR:", err);
+    res.status(500).json({ message: "Registration failed" });
   }
 });
 
-export default userRoutes;
+// POST /users/login
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const db = getDb();
+
+    const user = await db.collection("users").findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET || "supersecret",
+      { expiresIn: "7d" },
+    );
+
+    res.json({
+      token,
+      user: { _id: user._id, name: user.name, email: user.email },
+    });
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    res.status(500).json({ message: "Login failed" });
+  }
+});
+
+export default router;

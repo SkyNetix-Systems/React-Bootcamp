@@ -2,74 +2,141 @@ import { verifyUser } from "../api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export function Login() {
   const [user, setUser] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setUser((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
       const res = await verifyUser(user);
 
-      if (res?.token && res?.user) {
+      if (res?.token) {
         sessionStorage.setItem("token", res.token);
         sessionStorage.setItem("user", JSON.stringify(res.user));
         axios.defaults.headers.common["Authorization"] = `Bearer ${res.token}`;
-        navigate("/home", { replace: true });
-        return;
+        navigate("/home");
+      } else {
+        setError("Invalid email or password 😬");
       }
-
-      alert("Login failed. Check email/password.");
     } catch (err) {
-      console.error("LOGIN ERROR:", err);
-      alert("Login failed. Server error.");
+      setError("Login failed. Check credentials or server 🔥");
+      console.error("LOGIN ERROR:", err.response?.status || err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-md rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-semibold mb-4 text-center">
-          Welcome back 👋
-        </h2>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f5f7fb",
+      }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          width: 340,
+          padding: 24,
+          borderRadius: 12,
+          background: "#fff",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2 style={{ textAlign: "center", marginBottom: 16 }}>Login</h2>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Input
-            name="email"
-            placeholder="Email"
-            onChange={handleChange}
-            required
-          />
-
-          <Input
-            name="password"
-            type="password"
-            placeholder="Password"
-            onChange={handleChange}
-            required
-          />
-
-          <Button type="submit" className="mt-2">
-            Login
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate("/register")}
+        {error && (
+          <div
+            style={{
+              background: "#ffe4e6",
+              color: "#b91c1c",
+              padding: "8px 10px",
+              borderRadius: 6,
+              marginBottom: 12,
+              fontSize: 14,
+            }}
           >
-            Create new account
-          </Button>
-        </form>
-      </div>
+            {error}
+          </div>
+        )}
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          required
+          value={user.email}
+          onChange={(e) => setUser({ ...user, email: e.target.value })}
+          style={inputStyle}
+        />
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+          value={user.password}
+          onChange={(e) => setUser({ ...user, password: e.target.value })}
+          style={inputStyle}
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "10px",
+            borderRadius: 8,
+            border: "none",
+            background: "#2563eb",
+            color: "#fff",
+            fontWeight: 600,
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate("/register")}
+          style={{
+            width: "100%",
+            marginTop: 10,
+            padding: "10px",
+            borderRadius: 8,
+            border: "1px solid #2563eb",
+            background: "#fff",
+            color: "#2563eb",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Create new Account
+        </button>
+      </form>
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px",
+  marginBottom: "12px",
+  border: "1px solid #d1d5db",
+  borderRadius: 8,
+  fontSize: 14,
+  color: "#111827",
+  background: "#fff",
+  outline: "none",
+};

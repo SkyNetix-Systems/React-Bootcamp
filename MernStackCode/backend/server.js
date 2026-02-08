@@ -1,50 +1,67 @@
+import dotenv from "dotenv";
+dotenv.config(); // 🔥 MUST be first
+
 import express from "express";
 import cors from "cors";
-import multer from "multer";
-import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
+import { fileURLToPath } from "url";
 
-import postRoutes from "./postRoutes.js";
+import { connectToServer } from "./connect.js";
+import posts from "./postRoutes.js";
 import users from "./userRoutes.js";
 import awsRoutes from "./awsRoutes.js";
-import * as connect from "./connect.js";
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const uploadDir = "uploads";
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+// Fix __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+// Global safety logs
+process.on("unhandledRejection", (err) => {
+  console.error("UNHANDLED REJECTION 💥", err);
+});
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION 💥", err);
 });
 
-const upload = multer({ storage });
-
+// Middlewares
 app.use(cors());
-
-// Multer route BEFORE JSON parsers
-app.post("/images", upload.single("image"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  res.status(201).json({
-    filename: req.file.filename,
-    url: `/uploads/${req.file.filename}`,
-  });
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-app.use(postRoutes);
-app.use(users);
-app.use(awsRoutes);
-
-app.listen(PORT, async () => {
-  await connect.connectToServer();
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+// Health check
+app.get("/", (req, res) => {
+  res.send("🚀 MERN Backend (S3 mode) is running...");
 });
+
+// API routes
+app.use("/posts", posts);
+app.use("/users", users);
+app.use("/aws", awsRoutes);
+
+// 404 handler (must be LAST)
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found ❌" });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("SERVER ERROR:", err);
+  res.status(500).json({ message: "Internal Server Error 💥" });
+});
+
+// Start server after DB connect
+(async () => {
+  try {
+    await connectToServer();
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log("☁️ Image storage: AWS S3");
+    });
+  } catch (err) {
+    console.error("❌ Failed to start server:", err);
+    process.exit(1);
+  }
+})();

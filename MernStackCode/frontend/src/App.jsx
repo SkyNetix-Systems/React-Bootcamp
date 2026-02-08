@@ -34,8 +34,6 @@ function App() {
   useEffect(() => {
     // Fetch JWT token (or user token) from sessionStorage
     let token = sessionStorage.getItem("token"); // ✅ correct key
-    console.log("Token=> ", token);
-
     // If token exists, attach it to axios default headers
     // This ensures Authorization header is sent with every API request
     if (token) {
